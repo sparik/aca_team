@@ -24,6 +24,22 @@ def accuracy_score(Y_true, Y_predict):
             correct += 1
     return correct / len(Y_true)
 
+def get_decision_tree_accuracy(trainX, trainY, testX, testY):
+    dtree = DecisionTree(100)
+    dtree.fit(trainX, trainY)
+    dtree_predicted = dtree.predict(testX)
+    return accuracy_score(testY, dtree_predicted)
+
+def get_random_forest_accuracy(trainX, trainY, testX, testY):
+    forest = RandomForest(10, 100)
+    forest.fit(trainX, trainY)
+    forest_predicted = forest.predict(testX)[0]
+    return accuracy_score(testY, forest_predicted)
+
+def get_log_regression_accuracy(trainX, trainY, testX, testY):
+    log_beta = logistic_regression(trainX, trainY, step_size=1e-1, max_steps=100)
+    log_predicted = logistic_predict(testX, log_beta)
+    return accuracy_score(testY, log_predicted)
 
 def evaluate_performance():
     '''
@@ -53,8 +69,9 @@ def evaluate_performance():
     forest_accuracies = []
     log_accuracies = []
 
+    np.random.seed(13)
+
     for trial in range(10):
-        np.random.seed(13)
         idx = np.arange(n)
         np.random.shuffle(idx)
         X = X[idx]
@@ -70,23 +87,13 @@ def evaluate_performance():
         testY = Y[trainsz:]
 
         # train decision tree
-        dtree = DecisionTree(100)
-        dtree.fit(trainX, trainY)
-        dtree_predicted = dtree.predict(testX)
-        dtree_accuracy = accuracy_score(testY, dtree_predicted)
-        dtree_accuracies.append(dtree_accuracy)
+        dtree_accuracies.append(get_decision_tree_accuracy(trainX, trainY, testX, testY))
 
         # train random forest
-        forest = RandomForest(10, 100)
-        forest.fit(trainX, trainY)
-        forest_predicted = forest.predict(testX)[0]
-        forest_accuracy = accuracy_score(testY, forest_predicted)
-        forest_accuracies.append(forest_accuracy)
+        forest_accuracies.append(get_random_forest_accuracy(trainX, trainY, testX, testY))
 
-        log_beta = logistic_regression(trainX, trainY, step_size=1e-1, max_steps=100)
-        log_predicted = logistic_predict(testX, log_beta)
-        log_accuracy = accuracy_score(testY, log_predicted)
-        log_accuracies.append(log_accuracy)
+        # train logistic regression
+        log_accuracies.append(get_log_regression_accuracy(trainX, trainY, testX, testY))
 
 
     # compute the training accuracy of the model

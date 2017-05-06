@@ -83,6 +83,11 @@ def logistic_regression(X, Y, epsilon=1e-4, l=1, step_size=1e-3, max_steps=500):
 
     return beta
 
+def logistic_probs(X, beta):
+    X1 = np.column_stack(((np.ones(len(X))), X))
+    probs = [sigmoid(np.dot(x, beta)) for x in X1]
+    return probs
+
 def logistic_predict(X, beta):
     X1 = np.column_stack(((np.ones(len(X))), X))
     probs = [sigmoid(np.dot(x, beta)) for x in X1]
