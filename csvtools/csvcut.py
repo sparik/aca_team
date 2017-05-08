@@ -146,12 +146,16 @@ def main():
         with open(args.file, 'r') as f:
             try:
                 cut(f, args)
+            except BrokenPipeError as ex:
+                pass
             except Exception as ex:
                 print("%s: %s" % (os.path.basename(__file__), str(ex)), file=sys.stderr)
                 sys.exit(1)
     else:
         try:
             cut(sys.stdin, args)
+        except BrokenPipeError as ex:
+            	pass
         except Exception as ex:
             print("%s: %s" % (os.path.basename(__file__), str(ex)), file=sys.stderr)
             sys.exit(1)
@@ -161,4 +165,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
