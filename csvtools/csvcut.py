@@ -87,11 +87,11 @@ def cut(instream, args):
 
 def parse_needed_fields(fields, fields_arg, separator):
 	"""
-    :param fields: names of fields of the dataset
-    :param fields_arg: the argument fields: a string 
-    specifying which fields to leave
-    :param separator: the argument separator: a string specifying 
-    the separator between fields to cut
+	:param fields: names of fields of the dataset
+	:param fields_arg: the argument fields: a string 
+	specifying which fields to leave
+	:param separator: the argument separator: a string specifying 
+	the separator between fields to cut
 	:return: list of field names of the resulting cut
 	"""
 
