@@ -15,7 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-s', '--separator', default=',',
-                        help="Separator to use in fields argument")
+                        help="Separator of the input file. Also used in the output file")
     parser.add_argument('-o', '--output_file', default=None,
                         help="Output file. If not specified, output will be written to stdout")
     parser.add_argument('-f', '--fields', default=None,
@@ -31,18 +31,23 @@ def parse_args():
     return args
 
 
-def process_lines(instream, outstream, fields_idx, needed_fields):
+def process_lines(instream, outstream, fields_idx, needed_fields, separator):
     """
     read from instream line by line, and write to outstream
     the fields with indices in fields_idx. Names of the fields
     are in needed_fields
+    :param instream: input stream to read the file from
+    :param outstream: output stream to write the output file to
+    :param fields_idx: a list of indexes of fields to select
+    :param needed_fields: names of the fields to select
+    :param separator: separator of the input file. Also used in the output file
     """
-    print(','.join(needed_fields), file=outstream)
+    print(separator.join(needed_fields), file=outstream)
 
     for line in instream:
-        features = line.strip().split(',')
+        features = line.strip().split(separator)
         needed_features = [features[i] for i in fields_idx]
-        print(','.join(needed_features), file=outstream)
+        print(separator.join(needed_features), file=outstream)
 
 def unique_in_order(lst):
     """
@@ -73,9 +78,9 @@ def cut(instream, args):
 
     fields = instream.readline()
     fields = fields.strip()
-    fields = fields.split(',')
+    fields = fields.split(args.separator)
 
-    needed_fields = parse_needed_fields(fields, args.fields, args.separator)
+    needed_fields = parse_needed_fields(fields, args.fields, ",")
 
     complement = args.complement
     unique = args.unique
@@ -90,17 +95,16 @@ def cut(instream, args):
 
     if not args.output_file is None:
         with open(args.output_file, 'w') as f:
-            process_lines(instream, f, fields_idx, needed_fields)
+            process_lines(instream, f, fields_idx, needed_fields, args.separator)
     else:
-        process_lines(instream, sys.stdout, fields_idx, needed_fields)
+        process_lines(instream, sys.stdout, fields_idx, needed_fields, args.separator)
 
 def parse_needed_fields(fields, fields_arg, separator):
     """
     :param fields: names of fields of the dataset
     :param fields_arg: the argument fields: a string
     specifying which fields to leave
-    :param separator: the argument separator: a string specifying
-    the separator between fields to cut
+    :param separator: separator of the fields argument. "," by default
     :return: list of field names of the resulting cut
     """
 
