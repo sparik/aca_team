@@ -1,9 +1,17 @@
 #!/usr/bin/python3
+
+"""
+this script can be used to select specific columns from a csv file
+"""
+
 import argparse
 import sys
 import os
 
 def parse_args():
+    """
+    parse arguments to the script and return them
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-s', '--separator', default=',',
@@ -12,7 +20,7 @@ def parse_args():
                         help="Output file. If not specified, output will be written to stdout")
     parser.add_argument('-f', '--fields', default=None,
                         help="Used to specify fields to cut (include in the output)")
-    parser.add_argument('file', nargs='?',     default=None, 
+    parser.add_argument('file', nargs='?', default=None,
                         help="Input file. If not specified, input will be read from stdin")
     parser.add_argument('-c', '--complement', action='store_true',
                         help="If this flag is set, all fields will be shown except the ones specified by --fields")
@@ -32,21 +40,23 @@ def process_lines(instream, outstream, fields_idx, needed_fields):
     print(','.join(needed_fields), file=outstream)
 
     for line in instream:
-        features = line.replace('\n', '').split(',')
+        features = line.strip().split(',')
         needed_features = [features[i] for i in fields_idx]
         print(','.join(needed_features), file=outstream)
 
-def unique_in_order(a):
+def unique_in_order(lst):
     """
     removes repeating elements of a, leaves only unique ones,
     and preserves order.
+    :param lst: a list (is not changed)
+    :return: a new list created from the provided list's unique elements
     """
     d = {}
     res = []
-    for x in a:
-        if not x in d:
-            d[x] = 1
-            res.append(x)
+    for elem in lst:
+        if not elem in d:
+            d[elem] = 1
+            res.append(elem)
 
     return res
 
@@ -57,14 +67,15 @@ def cut(instream, args):
     initialize fields of the dataset
     initialize the fields to cut (needed_fields)
     process_lines
+    :param instream: stream to read the csv file from
+    :param args: arguments of the cut
     """
 
     fields = instream.readline()
-    fields = fields.replace('\n', '')
+    fields = fields.strip()
     fields = fields.split(',')
 
     needed_fields = parse_needed_fields(fields, args.fields, args.separator)
-
 
     complement = args.complement
     unique = args.unique
@@ -83,14 +94,12 @@ def cut(instream, args):
     else:
         process_lines(instream, sys.stdout, fields_idx, needed_fields)
 
-    return 0
-
 def parse_needed_fields(fields, fields_arg, separator):
     """
     :param fields: names of fields of the dataset
-    :param fields_arg: the argument fields: a string 
+    :param fields_arg: the argument fields: a string
     specifying which fields to leave
-    :param separator: the argument separator: a string specifying 
+    :param separator: the argument separator: a string specifying
     the separator between fields to cut
     :return: list of field names of the resulting cut
     """
@@ -130,8 +139,6 @@ def parse_needed_fields(fields, fields_arg, separator):
             if not x in fields:
                 raise Exception("bad value for fields argument. Wrong field '%s'" % x)
             res.append(x)
-                
-
 
     return res
 
@@ -139,28 +146,20 @@ def parse_needed_fields(fields, fields_arg, separator):
 def main():
     args = parse_args()
 
-    if not args.file is None:
-        if not os.path.isfile(args.file):
-            print("%s: specified input file does not exist" % (os.path.basename(__file__)))
-            sys.exit(1)
-        with open(args.file, 'r') as f:
-            try:
-                cut(f, args)
-            except BrokenPipeError as ex:
-                pass
-            except Exception as ex:
-                print("%s: %s" % (os.path.basename(__file__), str(ex)), file=sys.stderr)
+    try:
+        if not args.file is None:
+            if not os.path.isfile(args.file):
+                print("%s: specified input file does not exist" % (os.path.basename(__file__)))
                 sys.exit(1)
-    else:
-        try:
+            with open(args.file, 'r') as file:
+                cut(file, args)
+        else:
             cut(sys.stdin, args)
-        except BrokenPipeError as ex:
-            	pass
-        except Exception as ex:
-            print("%s: %s" % (os.path.basename(__file__), str(ex)), file=sys.stderr)
-            sys.exit(1)
-
-
+    except BrokenPipeError:
+        pass
+    except Exception as ex:
+        print("%s: %s" % (os.path.basename(__file__), str(ex)), file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
