@@ -126,18 +126,27 @@ def parse_needed_fields(fields, fields_arg, separator):
                 if not start_f:
                     start_ind = 0
                 else:
-                    if not start_f in fields:
+                    if start_f.isdigit():
+                        start_ind = int(start_f) - 1
+                    elif not start_f in fields:
                         raise Exception("bad value for fields argument. Wrong field '%s'" % start_f)
-                    start_ind = fields.index(start_f)
+                    else:
+                        start_ind = fields.index(start_f)
 
                 if not end_f:
                     end_ind = len(fields) - 1
                 else:
-                    if not end_f in fields:
+                    if end_f.isdigit():
+                        end_ind = int(end_f) - 1
+                    elif not end_f in fields:
                         raise Exception("bad value for fields argument. Wrong field '%s'" % end_f)
-                    end_ind = fields.index(end_f)
+                    else:
+                        end_ind = fields.index(end_f)
 
-            for i in range(start_ind, end_ind + 1):
+            start_ind = max(start_ind, 0)
+            end_ind = min(end_ind + 1, len(fields))
+
+            for i in range(start_ind, end_ind):
                 res.append(fields[i])
         else:
             if not x in fields:
