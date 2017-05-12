@@ -111,37 +111,38 @@ def parse_needed_fields(fields, fields_arg, separator):
     res = []
 
     if not fields_arg is None:
-        split_fields = fields_arg.split(separator)
+        needed_intervals = fields_arg.split(separator)
     else:
         return res
 
-    for x in split_fields:
-        if x.find("-") != -1:
-            interval = x.split("-")
-            if len(interval) > 2:
-                raise Exception("bad value for fields argument. Wrong interval '%s'" % x)
-            else:
-                start_f = interval[0]
-                end_f = interval[1]
-                if not start_f:
-                    start_ind = 0
-                else:
-                    if start_f.isdigit():
-                        start_ind = int(start_f) - 1
-                    elif not start_f in fields:
-                        raise Exception("bad value for fields argument. Wrong field '%s'" % start_f)
-                    else:
-                        start_ind = fields.index(start_f)
+    # needed_intervals - list of needed fields and ranges
+    # e.g. ["a", "c", "b-d", 5-10, 3]
 
-                if not end_f:
-                    end_ind = len(fields) - 1
+    for interval in needed_intervals:
+        if "-" in interval:
+            try:
+                start_f, end_f = interval.split("-")
+            except:
+                raise Exception("bad value for fields argument. Wrong interval '%s'" % interval)
+            if not start_f:
+                start_ind = 0
+            else:
+                if start_f.isdigit():
+                    start_ind = int(start_f) - 1
+                elif not start_f in fields:
+                    raise Exception("bad value for fields argument. Wrong field '%s'" % start_f)
                 else:
-                    if end_f.isdigit():
-                        end_ind = int(end_f) - 1
-                    elif not end_f in fields:
-                        raise Exception("bad value for fields argument. Wrong field '%s'" % end_f)
-                    else:
-                        end_ind = fields.index(end_f)
+                    start_ind = fields.index(start_f)
+
+            if not end_f:
+                end_ind = len(fields) - 1
+            else:
+                if end_f.isdigit():
+                    end_ind = int(end_f) - 1
+                elif not end_f in fields:
+                    raise Exception("bad value for fields argument. Wrong field '%s'" % end_f)
+                else:
+                    end_ind = fields.index(end_f)
 
             start_ind = max(start_ind, 0)
             end_ind = min(end_ind + 1, len(fields))
@@ -149,9 +150,10 @@ def parse_needed_fields(fields, fields_arg, separator):
             for i in range(start_ind, end_ind):
                 res.append(fields[i])
         else:
-            if not x in fields:
-                raise Exception("bad value for fields argument. Wrong field '%s'" % x)
-            res.append(x)
+            needed_field = interval
+            if not needed_field in fields:
+                raise Exception("bad value for fields argument. Wrong field '%s'" % needed_field)
+            res.append(needed_field)
 
     return res
 
